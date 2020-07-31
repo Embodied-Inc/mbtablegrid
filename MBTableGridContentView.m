@@ -45,6 +45,7 @@ NSString * const MBTableGridTrackingPartKey = @"part";
 - (BOOL)_canEditCellAtColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (void)_setStickyColumn:(MBHorizontalEdge)stickyColumn row:(MBVerticalEdge)stickyRow;
 - (CGFloat)_widthForColumn:(NSUInteger)columnIndex;
+- (CGFloat)_heightForRow:(NSUInteger)rowIndex;
 - (MBHorizontalEdge)_stickyColumn;
 - (MBVerticalEdge)_stickyRow;
 - (NSColor *)_selectionColor;
@@ -771,8 +772,34 @@ NSString * const MBTableGridTrackingPartKey = @"part";
 
 - (NSRect)rectOfRow:(NSUInteger)rowIndex
 {
-	NSRect rect = NSMakeRect(0, 0, self.frame.size.width, self.rowHeight);
-	rect.origin.y += self.rowHeight * rowIndex;
+    BOOL foundRect = NO;
+    NSRect rect = NSZeroRect;
+
+    NSValue *cachedRectValue = self.tableGrid.rowRects[@(rowIndex)];
+    if (cachedRectValue) {
+        rect = cachedRectValue.rectValue;
+        foundRect = YES;
+    }
+    
+    if (!foundRect) {
+        CGFloat height = [self.tableGrid _heightForRow:rowIndex];
+        
+        rect = NSMakeRect(0, 0, self.frame.size.width, height);
+        rect.origin.y += height * rowIndex;
+
+//        if (rowIndex > 0) {
+//            NSRect previousRect = [self rectOfColumn:columnIndex-1];
+//            rect.origin.x = previousRect.origin.x + previousRect.size.width;
+//        }
+
+        self.tableGrid.rowRects[@(rowIndex)] = [NSValue valueWithRect:rect];
+
+    }
+    else {
+        rect = NSMakeRect(0, 0, self.frame.size.width, self.rowHeight);
+        rect.origin.y += self.rowHeight * rowIndex;
+    }
+
 	return rect;
 }
 

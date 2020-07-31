@@ -225,7 +225,9 @@ typedef NS_ENUM(NSUInteger, MBVerticalEdge) {
  */
 
 @property (nonatomic, readonly) NSMutableDictionary<NSNumber *, NSValue *> *columnRects;
+@property (nonatomic, readonly) NSMutableDictionary<NSNumber *, NSValue *> *rowRects;
 @property (nonatomic, readonly) NSMutableDictionary<NSNumber *, NSNumber *> *columnWidths;
+@property (nonatomic, readonly) NSMutableDictionary<NSNumber *, NSNumber *> *rowHeights;
 
 
 - (void)resizeColumnWithIndex:(NSUInteger)columnIndex width:(float)w;
@@ -750,6 +752,16 @@ cells. A cell can individually override this behavior. */
  * @see          tableGrid:setWidth:forColumn:
  */
 - (float) tableGrid:(MBTableGrid *)aTableGrid widthForColumn:(NSUInteger)columnIndex;
+
+/**
+ * @brief        Returns the row height (in points) for the given row.
+ *
+ * @param        aTableGrid        The table grid that sent the message.
+ * @param        rowIndex           A row in \c aTableGrid.
+ *
+ * @see          tableGrid:setHeight:forRow:   - not implemented
+ */
+- (float) tableGrid:(MBTableGrid *)aTableGrid heightForRow:(NSUInteger)rowIndex;
 
 /**
  * @}

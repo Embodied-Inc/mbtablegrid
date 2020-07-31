@@ -62,6 +62,7 @@ NSString *MBTableGridRowDataType = @"mbtablegrid.pasteboard.row";
 - (void)_setObjectValue:(id)value forColumns:(NSIndexSet *)columnIndexes rows:(NSIndexSet *)rowIndexes;
 - (CGFloat)_minimumWidthForColumn:(NSUInteger)columnIndex;
 - (CGFloat)_widthForColumn:(NSUInteger)columnIndex;
+- (CGFloat)_heightForRow:(NSUInteger)rowIndex;
 - (void)_setWidth:(CGFloat) width forColumn:(NSUInteger)columnIndex;
 - (BOOL)_canEditCellAtColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (NSCell *)_footerCellForColumn:(NSUInteger)columnIndex;
@@ -1947,6 +1948,27 @@ NS_INLINE MBVerticalEdge MBOppositeVerticalEdge(MBVerticalEdge other) {
     }
     
     return minColumnWidth;
+}
+
+- (CGFloat)_heightForRow:(NSUInteger)rowIndex {
+    if (rowIndex >= _numberOfRows)
+        return 0.0;
+    
+    CGFloat height = 0.0;
+    CGFloat min_height = self.contentView.rowHeight;
+    
+    if ([self.dataSource respondsToSelector:@selector(tableGrid:heightForRow:)]) {
+        height = [self.dataSource tableGrid:self heightForRow: rowIndex];
+        if (height > min_height) {
+            _rowHeights[@(rowIndex)] = @(height);
+        }
+    }
+    
+    if (_rowHeights[@(rowIndex)]) {
+        return _rowHeights[@(rowIndex)].doubleValue;
+    }
+
+    return min_height;
 }
 
 - (CGFloat)_widthForColumn:(NSUInteger)columnIndex {
