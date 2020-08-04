@@ -785,19 +785,14 @@ NSString * const MBTableGridTrackingPartKey = @"part";
         CGFloat height = [self.tableGrid _heightForRow:rowIndex];
         
         rect = NSMakeRect(0, 0, self.frame.size.width, height);
-        rect.origin.y += height * rowIndex;
-
-//        if (rowIndex > 0) {
-//            NSRect previousRect = [self rectOfColumn:columnIndex-1];
-//            rect.origin.x = previousRect.origin.x + previousRect.size.width;
-//        }
+        
+        if (rowIndex > 0) {
+            NSRect previousRect = [self rectOfRow:rowIndex-1];
+            rect.origin.y = previousRect.origin.y + previousRect.size.height;
+        }
 
         self.tableGrid.rowRects[@(rowIndex)] = [NSValue valueWithRect:rect];
 
-    }
-    else {
-        rect = NSMakeRect(0, 0, self.frame.size.width, self.rowHeight);
-        rect.origin.y += self.rowHeight * rowIndex;
     }
 
 	return rect;
@@ -825,11 +820,35 @@ NSString * const MBTableGridTrackingPartKey = @"part";
 
 - (NSInteger)rowAtPoint:(NSPoint)aPoint
 {
-	NSInteger row = aPoint.y / self.rowHeight;
-	if(row >= 0 && row < self.tableGrid.numberOfRows) {
-		return row;
-	}
-	return NSNotFound;
+    NSUInteger upper, lower;
+    NSUInteger rowIndex;
+    NSRect  myFrame;
+    float    cellY, cellHeight;
+    NSInteger row = 0;
+    lower = 0;
+    upper = self.tableGrid.numberOfRows;
+    
+    while (lower < upper)
+    {
+        rowIndex = (lower + upper) / 2.0;
+        myFrame = [self rectOfRow:rowIndex];
+        cellY = myFrame.origin.y;
+        cellHeight = myFrame.size.height;
+        
+        if (aPoint.y < cellY)
+            upper = rowIndex;        // lower, look to the left...
+        else if (aPoint.y > (cellY+ cellHeight))
+            lower = rowIndex + 1;    // higher, look to the right...
+        else
+        {
+            row = rowIndex;                // hit it...
+            break;
+        }
+    }
+    if(row >= 0 && row < self.tableGrid.numberOfRows) {
+        return row;
+    }
+    return NSNotFound;
 }
 
 @end

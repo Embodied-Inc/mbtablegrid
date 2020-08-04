@@ -143,6 +143,7 @@ NS_INLINE MBVerticalEdge MBOppositeVerticalEdge(MBVerticalEdge other) {
 - (id)initWithFrame:(NSRect)frameRect {
 	if (self = [super initWithFrame:frameRect]) {
 		_columnWidths = [NSMutableDictionary dictionary];
+        _rowHeights = [NSMutableDictionary dictionary];
 
 		// Post frame changed notifications
 		self.postsFrameChangedNotifications = YES;
@@ -1632,15 +1633,17 @@ NS_INLINE MBVerticalEdge MBOppositeVerticalEdge(MBVerticalEdge other) {
 }
 
 - (NSRange)_rangeOfRowsIntersectingRect:(NSRect)rect {
-    NSRect contentRect = [self convertRect:rect toView:self.contentView];
-    CGFloat rowHeight = self.contentView.rowHeight;
+    NSUInteger firstRow = [self rowAtPoint: rect.origin];
+    NSUInteger lastRow = [self rowAtPoint: NSMakePoint(NSMaxX(rect), NSMaxY(rect))];
+    
     NSUInteger numberOfRows = self.numberOfRows;
     if (numberOfRows == 0)
         return NSMakeRange(NSNotFound, 0);
     
-    NSUInteger firstRow = MAX(0, floor(NSMinY(contentRect) / rowHeight));
-    NSUInteger lastRow = MIN(numberOfRows - 1, ceil(NSMaxY(contentRect)/rowHeight));
-    return NSMakeRange(firstRow, lastRow - firstRow + 1);
+   // NSLog(@"MyRange = %@",NSStringFromRange(NSMakeRange(myfirstRow, mylastRow - myfirstRow + 1)));
+    if (lastRow < firstRow)
+        lastRow = firstRow;
+    return NSMakeRange(firstRow, (lastRow - firstRow) + 1);
 }
 
 - (NSRect)rectOfSelectionRelativeToContentView {
