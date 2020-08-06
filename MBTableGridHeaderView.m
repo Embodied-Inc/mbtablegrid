@@ -266,6 +266,9 @@ NSString* kAutosavedColumnHiddenKey = @"AutosavedColumnHidden";
         }
     }
 
+    if (theEvent.clickCount == 1 && rightMouse) {
+        [super rightMouseDown: theEvent];
+    }
     // Pass the event back to the MBTableGrid (Used to give First Responder status)
     [self.tableGrid mouseDown:theEvent];
 }
