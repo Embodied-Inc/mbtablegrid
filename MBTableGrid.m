@@ -1071,6 +1071,10 @@ NS_INLINE MBVerticalEdge MBOppositeVerticalEdge(MBVerticalEdge other) {
 #pragma mark -
 #pragma mark Find Bar Support
 
+- (IBAction)performFindPanelAction:(NSControl *)sender {
+    [_textFinder performAction:sender.tag];
+}
+
 - (IBAction)performTextFinderAction:(NSControl *)sender {
     [_textFinder performAction:sender.tag];
 }
