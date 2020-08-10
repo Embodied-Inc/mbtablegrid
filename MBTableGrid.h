@@ -164,6 +164,7 @@ typedef NS_ENUM(NSUInteger, MBVerticalEdge) {
 
 - (void)setSelectedRowIndexes:(NSIndexSet *)anIndexSet notify:(BOOL)notify;
 - (void)setSelectedColumnIndexes:(NSIndexSet *)anIndexSet notify:(BOOL)notify;
+- (void)scrollSelectionToVisible;
 
 #pragma mark -
 #pragma mark Reloading the Grid
