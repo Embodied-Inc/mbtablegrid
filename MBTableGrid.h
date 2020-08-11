@@ -237,6 +237,8 @@ typedef NS_ENUM(NSUInteger, MBVerticalEdge) {
  * @}
  */
 
+- (CGFloat)resizeRowWithIndex:(NSUInteger)rowIndex withDistance:(float)distance location:(NSPoint)location;
+
 #pragma mark -
 #pragma mark Selecting Columns and Rows
 
@@ -741,6 +743,16 @@ cells. A cell can individually override this behavior. */
   * @see			tableGrid:widthForColumn:
  */
 - (void) tableGrid:(MBTableGrid *)aTableGrid setWidth:(float)width forColumn:(NSUInteger)columnIndex;
+
+/**
+* @brief        Sets the row height (in points) for the given row.
+*
+* @param        aTableGrid        The table grid that sent the message.
+* @param        rowIndex        A row in \c aTableGrid.
+*
+ * @see            tableGrid:heightForRow:
+*/
+- (void) tableGrid:(MBTableGrid *)aTableGrid setHeight:(float)height forRow:(NSUInteger)rowIndex;
 
 @optional
 

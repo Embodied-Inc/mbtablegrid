@@ -48,7 +48,8 @@
     BOOL canResize;
     BOOL isResizing;
     NSUInteger draggingColumnIndex;
-	
+    NSUInteger draggingRowIndex;
+
 	NSMutableDictionary<NSString *, NSDictionary<NSString *, id> *> *columnAutoSaveProperties;
 	
 }

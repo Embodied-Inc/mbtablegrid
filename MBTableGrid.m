@@ -61,9 +61,11 @@ NSString *MBTableGridRowDataType = @"mbtablegrid.pasteboard.row";
 - (void)_setObjectValue:(id)value forColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (void)_setObjectValue:(id)value forColumns:(NSIndexSet *)columnIndexes rows:(NSIndexSet *)rowIndexes;
 - (CGFloat)_minimumWidthForColumn:(NSUInteger)columnIndex;
+- (CGFloat)_minimumHeightForRow:(NSUInteger)rowIndex;
 - (CGFloat)_widthForColumn:(NSUInteger)columnIndex;
 - (CGFloat)_heightForRow:(NSUInteger)rowIndex;
 - (void)_setWidth:(CGFloat) width forColumn:(NSUInteger)columnIndex;
+- (void)_setHeight:(CGFloat) height forRow:(NSUInteger)rowIndex;
 - (BOOL)_canEditCellAtColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (NSCell *)_footerCellForColumn:(NSUInteger)columnIndex;
 - (NSCell *)_footerCellForRow:(NSUInteger)rowIndex;
@@ -385,6 +387,20 @@ NS_INLINE MBVerticalEdge MBOppositeVerticalEdge(MBVerticalEdge other) {
 
 #pragma mark Resize scrollview content size
 
+- (void)resizeRowWithIndex:(NSUInteger)rowIndex height:(float)h {
+    // Set new width of column
+    CGFloat currentHeight = h;
+    
+    [self.rowRects removeAllObjects];
+    if (currentHeight < [self _minimumHeightForRow:rowIndex]) {
+        currentHeight = [self _minimumHeightForRow:rowIndex];
+    }
+    [self _setHeight:currentHeight forRow:rowIndex];
+    
+    self.needsDisplay = YES;
+}
+
+
 - (void)resizeColumnWithIndex:(NSUInteger)columnIndex width:(float)w {
 	// Set new width of column
 	CGFloat currentWidth = w;
@@ -409,6 +425,40 @@ NS_INLINE MBVerticalEdge MBOppositeVerticalEdge(MBVerticalEdge other) {
 }
 
 #pragma mark Resize scrollview content size
+
+- (CGFloat)resizeRowWithIndex:(NSUInteger)rowIndex withDistance:(float)distance location:(NSPoint)location {
+    // Note that we only need this rect for its origin, which won't be changing, otherwise we'd need to flush the column rect cache first
+    NSRect rowRect = [self.contentView rectOfRow:rowIndex];
+    
+    // Flush rect cache for this column because we're changing its size
+    // Note that we're doing this after calling rectOfColumn: because that would cache the rect before we change its width...
+    [self.rowRects removeAllObjects];
+    
+    // Set new width of column
+    CGFloat currentHeight = [self _heightForRow:rowIndex];
+    CGFloat offset = 0.0;
+    CGFloat minRowHeight = [self _minimumHeightForRow:rowIndex];
+    
+    if (currentHeight + distance <= minRowHeight) {
+        distance = -(currentHeight - minRowHeight);
+        currentHeight = minRowHeight;
+        offset = rowRect.origin.y - location.y + minRowHeight;
+    } else {
+        currentHeight += distance;
+    }
+    
+    [self _setHeight:currentHeight forRow:rowIndex];
+    
+    // Update views with new sizes and mark the rightward columns as dirty
+    for (NSView *verticleView in @[ contentView, rowHeaderView ]) {
+        [verticleView setFrameSize:NSMakeSize(NSWidth(verticleView.frame), NSHeight(verticleView.frame) + distance)];
+        [verticleView setNeedsDisplayInRect:NSMakeRect(0, rowRect.origin.y,
+                                                       NSWidth(verticleView.bounds),
+                                                       NSHeight(verticleView.bounds) - rowRect.origin.y)];
+    }
+    
+    return offset;
+}
 
 /** Make sure we catch mouse down events inside the scrollview, but outside the table content view. */
 - (NSView*) hitTest:(NSPoint)point {
@@ -1947,6 +1997,12 @@ NS_INLINE MBVerticalEdge MBOppositeVerticalEdge(MBVerticalEdge other) {
 	}
 }
 
+- (CGFloat)_minimumHeightForRow:(NSUInteger)rowIndex {
+    CGFloat minColumnWidth = self.contentView.rowHeight;
+    
+    return minColumnWidth;
+}
+
 - (CGFloat)_minimumWidthForColumn:(NSUInteger)columnIndex {
     CGFloat minColumnWidth = _minimumColumnWidth;
     
@@ -1976,6 +2032,15 @@ NS_INLINE MBVerticalEdge MBOppositeVerticalEdge(MBVerticalEdge other) {
     }
 
     return min_height;
+}
+
+- (void)_setHeight:(CGFloat)height forRow:(NSUInteger)rowIndex
+{
+    _rowHeights[@(rowIndex)] = @(height);
+
+    if ([self.dataSource respondsToSelector:@selector(tableGrid:setHeight:forRow:)]) {
+        [self.dataSource tableGrid:self setHeight:height forRow:rowIndex];
+    }
 }
 
 - (CGFloat)_widthForColumn:(NSUInteger)columnIndex {

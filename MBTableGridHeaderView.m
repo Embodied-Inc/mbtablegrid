@@ -92,6 +92,21 @@ NSString* kAutosavedColumnHiddenKey = @"AutosavedColumnHidden";
 			column++;
 		}
 	}
+    else if (self.orientation == MBTableHeaderVerticalOrientation) {
+        NSRect visibleRect = self.enclosingScrollView.insetDocumentVisibleRect;
+         NSRange rowRange = [self.tableGrid _rangeOfRowsIntersectingRect:
+                             [self convertRect:visibleRect toView:self.tableGrid]];
+         NSUInteger row = rowRange.location;
+         while (row != NSNotFound && row < NSMaxRange(rowRange)) {
+             NSRect headerRect = [self headerRectOfRow:row];
+             NSRect resizeRect = NSMakeRect(NSMinX(headerRect), NSMinY(headerRect) + NSHeight(headerRect) -2,  NSWidth(headerRect), 5);
+             
+             if(CGRectIntersectsRect(resizeRect, visibleRect)) {
+                 [self addCursorRect:resizeRect cursor:NSCursor.resizeUpDownCursor];
+             }
+             row++;
+         }
+    }
 }
 
 - (void) updateTrackingAreas {
@@ -122,6 +137,23 @@ NSString* kAutosavedColumnHiddenKey = @"AutosavedColumnHidden";
 			column++;
 		}
 	}
+    else if (self.orientation == MBTableHeaderVerticalOrientation) {
+        NSRect visibleRect = self.enclosingScrollView.insetDocumentVisibleRect;
+        NSRange rowRange = [self.tableGrid _rangeOfRowsIntersectingRect:
+                            [self convertRect:visibleRect toView:self.tableGrid]];
+        NSUInteger row = rowRange.location;
+        while (row != NSNotFound && row < NSMaxRange(rowRange)) {
+            NSRect headerRect = [self headerRectOfRow:row];
+            NSRect resizeRect = NSMakeRect(NSMinX(headerRect), NSMinY(headerRect) + NSHeight(headerRect) -2,  NSWidth(headerRect), 5);
+
+            if(CGRectIntersectsRect(resizeRect, visibleRect)) {
+                NSTrackingArea *resizeTrackingArea = [[NSTrackingArea alloc] initWithRect:resizeRect options: (NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways) owner:self userInfo:nil];
+                [self addTrackingArea:resizeTrackingArea];
+            }
+            row++;
+        }
+
+    }
 }
 
 - (void)drawRect:(NSRect)rect
@@ -207,6 +239,7 @@ NSString* kAutosavedColumnHiddenKey = @"AutosavedColumnHidden";
     if (canResize) {
         // Set resize column index
         draggingColumnIndex = [self.tableGrid columnAtPoint:[self convertPoint:NSMakePoint(loc.x - 3, loc.y) toView:self.tableGrid]];
+        draggingRowIndex = [self.tableGrid rowAtPoint:[self convertPoint:NSMakePoint(loc.x, loc.y - 3) toView:self.tableGrid]];
         lastMouseDraggingLocation = loc;
         isResizing = YES;
     } else if (!rightMouse && self.orientation == MBTableHeaderHorizontalOrientation &&
@@ -289,23 +322,42 @@ NSString* kAutosavedColumnHiddenKey = @"AutosavedColumnHidden";
 	CGFloat deltaY = fabs(loc.y - mouseDownLocation.y);
 	    
     if (canResize) {
-        [NSCursor.resizeLeftRightCursor set];
         [self.window disableCursorRects];
         
-        // Set drag distance
-        CGFloat dragDistance = loc.x - lastMouseDraggingLocation.x;
-        
-        lastMouseDraggingLocation = loc;
-        
-        // Resize column and resize views
-		
-        CGFloat offset = [self.tableGrid resizeColumnWithIndex:draggingColumnIndex withDistance:dragDistance location:loc];
-        lastMouseDraggingLocation.x += offset;
-        
-        if (offset != 0.0) {
-            [NSCursor.resizeRightCursor set];
-        } else {
+        if (self.orientation == MBTableHeaderHorizontalOrientation) {
             [NSCursor.resizeLeftRightCursor set];
+
+            // Set drag distance
+            CGFloat dragDistance = loc.x - lastMouseDraggingLocation.x;
+            
+            lastMouseDraggingLocation = loc;
+            
+            // Resize column and resize views
+            
+            CGFloat offset = [self.tableGrid resizeColumnWithIndex:draggingColumnIndex withDistance:dragDistance location:loc];
+            lastMouseDraggingLocation.x += offset;
+            
+            if (offset != 0.0) {
+                [NSCursor.resizeRightCursor set];
+            } else {
+                [NSCursor.resizeLeftRightCursor set];
+            }
+        }
+        else if (self.orientation == MBTableHeaderVerticalOrientation) {
+            [NSCursor.resizeUpDownCursor set];
+            CGFloat dragDistance = loc.y - lastMouseDraggingLocation.y;
+            lastMouseDraggingLocation = loc;
+
+            CGFloat offset = [self.tableGrid resizeRowWithIndex:draggingRowIndex
+                                                   withDistance:dragDistance location:loc];
+            lastMouseDraggingLocation.y += offset;
+
+            if (offset != 0.0) {
+                [NSCursor.resizeDownCursor set];
+            } else {
+                [NSCursor.resizeUpDownCursor set];
+            }
+            
         }
                
     } else {
