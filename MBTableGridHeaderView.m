@@ -457,6 +457,16 @@ NSString* kAutosavedColumnHiddenKey = @"AutosavedColumnHidden";
         mouseDownLocation = NSZeroPoint;
         
     }
+    if ([theEvent clickCount] == 2) {
+        if (self.orientation == MBTableHeaderHorizontalOrientation) {
+            NSPoint loc = [self convertPoint:theEvent.locationInWindow fromView:nil];
+            NSInteger itemUnderMouse = -1;
+            itemUnderMouse = [self.tableGrid columnAtPoint:[self convertPoint:loc toView:self.tableGrid]];
+            if ([self.tableGrid.dataSource respondsToSelector:@selector(tableGrid:editHeaderForColumn:)]) {
+                [self.tableGrid.dataSource tableGrid:self.tableGrid editHeaderForColumn:itemUnderMouse];
+            }
+        }
+    }
 }
 
 - (void)mouseEntered:(NSEvent *)theEvent

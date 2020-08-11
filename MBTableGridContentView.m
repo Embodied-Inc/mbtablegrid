@@ -662,6 +662,7 @@ NSString * const MBTableGridTrackingPartKey = @"part";
 
 - (void)draggingEnded:(id <NSDraggingInfo>)sender
 {
+    [self stopAutoscrollTimer];
 	[self.tableGrid draggingEnded:sender];
 }
 

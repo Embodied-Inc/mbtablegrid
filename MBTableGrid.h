@@ -820,6 +820,7 @@ cells. A cell can individually override this behavior. */
 /**
  * @}
  */
+- (void)tableGrid:(MBTableGrid *)aTableGrid editHeaderForColumn:(NSUInteger)columnIndex;
 
 #pragma mark Footers
 
