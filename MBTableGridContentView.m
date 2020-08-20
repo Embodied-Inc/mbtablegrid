@@ -29,6 +29,7 @@
 #import "MBTableGridCell.h"
 #import "MBTableGridEditable.h"
 #import "NSScrollView+InsetRectangles.h"
+#import "MBTableGridPopUpCell.h"
 
 #define kGRAB_HANDLE_HALF_SIDE_LENGTH 3.0f
 #define kGRAB_HANDLE_SIDE_LENGTH 6.0f
@@ -71,6 +72,13 @@ NSString * const MBTableGridTrackingPartKey = @"part";
 - (void)_timerAutoscrollCallback:(NSTimer *)aTimer;
 @end
 
+@interface MBTableGridContentView ()
+
+@property (nonatomic, strong) id _savedTarget;
+@property (nonatomic, assign) SEL _savedSelector;
+@property (nonatomic, strong) id _savedCell;
+
+@end
 @implementation MBTableGridContentView
 
 @synthesize showsGrabHandle;
@@ -739,20 +747,26 @@ NSString * const MBTableGridTrackingPartKey = @"part";
         else {
             [selectedCell selectWithFrame:cellFrame inView:self editor:editor delegate:self start:0 length:currentValue.length];
         }
-    } else if ([selectedCell isKindOfClass:[NSPopUpButtonCell class]]) {
+    } else if ([selectedCell isKindOfClass:[MBTableGridPopUpCell class]]) {
         editedColumn = NSNotFound;
         editedRow = NSNotFound;
-        [(NSPopUpButtonCell*) selectedCell performClickWithFrame:cellFrame inView:self];
+        [(MBTableGridPopUpCell*)selectedCell setUserInfo:@{@"row":[NSNumber numberWithInteger:selectedRow],@"column":[NSNumber numberWithInteger:selectedColumn]}];
+        self._savedTarget = selectedCell.target;
+        self._savedSelector = selectedCell.action;
+        self._savedCell = selectedCell;
+        selectedCell.target = self;
+        selectedCell.action = @selector(cellClicked:);
+        [(MBTableGridPopUpCell*) selectedCell performClickWithFrame:cellFrame inView:self];
     } else if ([selectedCell isKindOfClass:[NSButtonCell class]]) {
-     //   selectedCell.selectable = NO;
-     //   selectedCell.selectable = NO;
         editedColumn = NSNotFound;
         editedRow = NSNotFound;
-       // [(NSButtonCell *) selectedCell performClick:self];
         [selectedCell.target performSelector:selectedCell.action withObject:selectedCell withObject:@{@"row":[NSNumber numberWithInteger:selectedRow],@"column":[NSNumber numberWithInteger:selectedColumn]}];
     }
 }
 
+- (void) cellClicked: sender {
+    [self._savedTarget performSelector:self._savedSelector withObject:self._savedCell];
+}
 #pragma mark Layout Support
 
 - (NSRect)rectOfColumn:(NSUInteger)columnIndex
