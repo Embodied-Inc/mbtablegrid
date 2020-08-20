@@ -693,51 +693,64 @@ NSString * const MBTableGridTrackingPartKey = @"part";
 
 - (void)editSelectedCell:(id)sender text:(NSString *)aString
 {
-	NSInteger selectedColumn = self.tableGrid.selectedColumnIndexes.firstIndex;
-	NSInteger selectedRow = self.tableGrid.selectedRowIndexes.firstIndex;
-	NSCell *selectedCell = [self.tableGrid _cellForColumn:selectedColumn row: selectedRow];
-
-	// Check if the cell can be edited
-	if(![self.tableGrid _canEditCellAtColumn:selectedColumn row:selectedColumn]) {
-		editedColumn = NSNotFound;
-		editedRow = NSNotFound;
-		return;
-	}
-
-	// Select it and only it
-	if (self.tableGrid.selectedColumnIndexes.count > 1 && editedColumn != NSNotFound) {
-		self.tableGrid.selectedColumnIndexes = [NSIndexSet indexSetWithIndex:editedColumn];
-	}
-	if (self.tableGrid.selectedRowIndexes.count > 1 && editedRow != NSNotFound) {
-		self.tableGrid.selectedRowIndexes = [NSIndexSet indexSetWithIndex:editedRow];
-	}
-
-	// Get the top-left selection
-	editedColumn = selectedColumn;
-	editedRow = selectedRow;
-
-	NSRect cellFrame = [self frameOfCellAtColumn:editedColumn row:editedRow];
-
-	selectedCell.editable = YES;
-	selectedCell.selectable = YES;
-	
-	NSString *currentValue = [self.tableGrid _objectValueForColumn:editedColumn row:editedRow];
-
-	NSText *editor = [self.window fieldEditor:YES forObject:self];
-	editor.delegate = self;
-	editor.alignment = selectedCell.alignment;
-	editor.font = selectedCell.font;
-    if ([selectedCell isKindOfClass:[NSTextFieldCell class]])
-        ((NSTextFieldCell *)selectedCell).textColor = NSColor.controlTextColor;
-	selectedCell.stringValue = currentValue;
-	editor.string = currentValue;
-	NSEvent* event = NSApp.currentEvent;
-    if(event != nil && event.type == NSEventTypeLeftMouseDown) {
-		[selectedCell editWithFrame:cellFrame inView:self editor:editor delegate:self event:event];
-	}
-	else {
-        [selectedCell selectWithFrame:cellFrame inView:self editor:editor delegate:self start:0 length:currentValue.length];
-	}
+    NSInteger selectedColumn = self.tableGrid.selectedColumnIndexes.firstIndex;
+    NSInteger selectedRow = self.tableGrid.selectedRowIndexes.firstIndex;
+    NSCell *selectedCell = [self.tableGrid _cellForColumn:selectedColumn row: selectedRow];
+    
+    // Check if the cell can be edited
+    if(![self.tableGrid _canEditCellAtColumn:selectedColumn row:selectedColumn]) {
+        editedColumn = NSNotFound;
+        editedRow = NSNotFound;
+        return;
+    }
+    
+    // Select it and only it
+    if (self.tableGrid.selectedColumnIndexes.count > 1 && editedColumn != NSNotFound) {
+        self.tableGrid.selectedColumnIndexes = [NSIndexSet indexSetWithIndex:editedColumn];
+    }
+    if (self.tableGrid.selectedRowIndexes.count > 1 && editedRow != NSNotFound) {
+        self.tableGrid.selectedRowIndexes = [NSIndexSet indexSetWithIndex:editedRow];
+    }
+    
+    // Get the top-left selection
+    editedColumn = selectedColumn;
+    editedRow = selectedRow;
+    
+    NSRect cellFrame = [self frameOfCellAtColumn:editedColumn row:editedRow];
+    
+    selectedCell.editable = YES;
+    selectedCell.selectable = YES;
+    
+    if ([selectedCell isKindOfClass:[NSTextFieldCell class]]) {
+        NSString *currentValue = [self.tableGrid _objectValueForColumn:editedColumn row:editedRow];
+        
+        NSText *editor = [self.window fieldEditor:YES forObject:self];
+        editor.delegate = self;
+        editor.alignment = selectedCell.alignment;
+        editor.font = selectedCell.font;
+        if ([selectedCell isKindOfClass:[NSTextFieldCell class]])
+            ((NSTextFieldCell *)selectedCell).textColor = NSColor.controlTextColor;
+        selectedCell.stringValue = currentValue;
+        editor.string = currentValue;
+        NSEvent* event = NSApp.currentEvent;
+        if(event != nil && event.type == NSEventTypeLeftMouseDown) {
+            [selectedCell editWithFrame:cellFrame inView:self editor:editor delegate:self event:event];
+        }
+        else {
+            [selectedCell selectWithFrame:cellFrame inView:self editor:editor delegate:self start:0 length:currentValue.length];
+        }
+    } else if ([selectedCell isKindOfClass:[NSPopUpButtonCell class]]) {
+        editedColumn = NSNotFound;
+        editedRow = NSNotFound;
+        [(NSPopUpButtonCell*) selectedCell performClickWithFrame:cellFrame inView:self];
+    } else if ([selectedCell isKindOfClass:[NSButtonCell class]]) {
+     //   selectedCell.selectable = NO;
+     //   selectedCell.selectable = NO;
+        editedColumn = NSNotFound;
+        editedRow = NSNotFound;
+       // [(NSButtonCell *) selectedCell performClick:self];
+        [selectedCell.target performSelector:selectedCell.action withObject:selectedCell withObject:@{@"row":[NSNumber numberWithInteger:selectedRow],@"column":[NSNumber numberWithInteger:selectedColumn]}];
+    }
 }
 
 #pragma mark Layout Support
@@ -791,12 +804,10 @@ NSString * const MBTableGridTrackingPartKey = @"part";
             NSRect previousRect = [self rectOfRow:rowIndex-1];
             rect.origin.y = previousRect.origin.y + previousRect.size.height;
         }
-
         self.tableGrid.rowRects[@(rowIndex)] = [NSValue valueWithRect:rect];
-
     }
 
-	return rect;
+	return NSMakeRect(0.0,rect.origin.y,[self frame].size.width,rect.size.height);
 }
 
 - (NSRect)frameOfCellAtColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex
@@ -833,6 +844,7 @@ NSString * const MBTableGridTrackingPartKey = @"part";
     {
         rowIndex = (lower + upper) / 2.0;
         myFrame = [self rectOfRow:rowIndex];
+        row = rowIndex;                // hit it...
         cellY = myFrame.origin.y;
         cellHeight = myFrame.size.height;
         
