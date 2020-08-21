@@ -10,12 +10,14 @@
 
 
 #import <Cocoa/Cocoa.h>
+#import "MBTableGridEditable.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface MBTableGridPopUpCell : NSPopUpButtonCell
+@interface MBTableGridPopUpCell : NSPopUpButtonCell <MBTableGridEditable>
 
 @property (nonatomic, strong, nullable) NSDictionary * userInfo;
+@property (nonatomic, assign, readonly) BOOL editOnFirstClick;
 
 @end
 

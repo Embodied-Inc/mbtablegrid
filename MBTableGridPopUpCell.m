@@ -17,6 +17,8 @@
 
 @implementation  MBTableGridPopUpCell
 
+@synthesize editOnFirstClick;
+
 -(id) initTextCell:(NSString *)stringValue pullsDown:(BOOL)pullDown {
     self = [super initTextCell:stringValue pullsDown:pullDown];
     if (self) {
@@ -48,6 +50,10 @@
 {
     // Do not draw any highlight.
     return nil;
+}
+
+- (BOOL) editOnFirstClick {
+    return true;
 }
 
 @end

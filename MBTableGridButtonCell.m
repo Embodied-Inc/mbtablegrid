@@ -16,6 +16,8 @@
 
 @implementation MBTableGridButtonCell
 
+@synthesize editOnFirstClick;
+
 -(id) init {
     self = [super init];
     if (self) {
@@ -42,6 +44,10 @@
     // Draw the bottom border
     NSRect bottomLine = NSMakeRect(NSMinX(cellFrame), NSMaxY(cellFrame)-1.0, NSWidth(cellFrame), 1.0);
     NSRectFill(bottomLine);
+}
+
+- (BOOL) editOnFirstClick {
+    return true;
 }
 
 @end
