@@ -30,6 +30,7 @@
 #import "MBTableGridEditable.h"
 #import "NSScrollView+InsetRectangles.h"
 #import "MBTableGridPopUpCell.h"
+#import "MBTableGridButtonCell.h"
 
 #define kGRAB_HANDLE_HALF_SIDE_LENGTH 3.0f
 #define kGRAB_HANDLE_SIDE_LENGTH 6.0f
@@ -757,7 +758,7 @@ NSString * const MBTableGridTrackingPartKey = @"part";
         selectedCell.target = self;
         selectedCell.action = @selector(cellClicked:);
         [(MBTableGridPopUpCell*) selectedCell performClickWithFrame:cellFrame inView:self];
-    } else if ([selectedCell isKindOfClass:[NSButtonCell class]]) {
+    } else if ([selectedCell isKindOfClass:[MBTableGridButtonCell class]]) {
         editedColumn = NSNotFound;
         editedRow = NSNotFound;
         [selectedCell.target performSelector:selectedCell.action withObject:selectedCell withObject:@{@"row":[NSNumber numberWithInteger:selectedRow],@"column":[NSNumber numberWithInteger:selectedColumn]}];

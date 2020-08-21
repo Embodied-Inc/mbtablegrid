@@ -52,6 +52,8 @@
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
+    [self drawInteriorWithFrame:cellFrame inView:controlView];
+
 	[_borderColor set];
 	
 	// Draw the right border
@@ -61,8 +63,6 @@
 	// Draw the bottom border
 	NSRect bottomLine = NSMakeRect(NSMinX(cellFrame), NSMaxY(cellFrame)-1.0, NSWidth(cellFrame), 1.0);
 	NSRectFill(bottomLine);
-
-	[self drawInteriorWithFrame:cellFrame inView:controlView];
 }
 
 - (NSColor *)highlightColorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView

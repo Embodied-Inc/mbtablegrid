@@ -1,24 +1,23 @@
 //
-//  MBTableGridPopUpCell.m
+//  MBTableGridButtonCell.m
 //  EmPath
 //
-//  Created by Daryl S Thachuk on 2020-08-20.
+//  Created by Daryl S Thachuk on 2020-08-21.
 //  Copyright © 2020 Embodied. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-#import "MBTableGridPopUpCell.h"
+#import "MBTableGridButtonCell.h"
 
-@interface MBTableGridPopUpCell ()
+@interface MBTableGridButtonCell ()
 
 @property (nonatomic, strong) NSColor *borderColor;
 
 @end
 
-@implementation  MBTableGridPopUpCell
+@implementation MBTableGridButtonCell
 
--(id) initTextCell:(NSString *)stringValue pullsDown:(BOOL)pullDown {
-    self = [super initTextCell:stringValue pullsDown:pullDown];
+-(id) init {
+    self = [super init];
     if (self) {
         self.borderColor = NSColor.gridColor;
         return self;
@@ -31,8 +30,11 @@
         [self.backgroundColor set];
         NSRectFill(cellFrame);
     }
-    [self.borderColor set];
         
+    [super drawWithFrame:cellFrame inView:controlView];
+
+    [self.borderColor set];
+
     // Draw the right border
     NSRect rightLine = NSMakeRect(NSMaxX(cellFrame)-1.0, NSMinY(cellFrame), 1.0, NSHeight(cellFrame));
     NSRectFill(rightLine);
@@ -40,14 +42,6 @@
     // Draw the bottom border
     NSRect bottomLine = NSMakeRect(NSMinX(cellFrame), NSMaxY(cellFrame)-1.0, NSWidth(cellFrame), 1.0);
     NSRectFill(bottomLine);
-
-    [super drawWithFrame:cellFrame inView:controlView];
-}
-
-- (NSColor *)highlightColorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
-{
-    // Do not draw any highlight.
-    return nil;
 }
 
 @end
