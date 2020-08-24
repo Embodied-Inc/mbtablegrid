@@ -743,7 +743,9 @@ NSString * const MBTableGridTrackingPartKey = @"part";
         editor.string = currentValue;
         NSEvent* event = NSApp.currentEvent;
         if(event != nil && event.type == NSEventTypeLeftMouseDown) {
-            [selectedCell editWithFrame:cellFrame inView:self editor:editor delegate:self event:event];
+            NSRect innerRect = NSInsetRect(cellFrame, 1, 1);
+            innerRect = NSOffsetRect(innerRect, -1, -1);
+            [selectedCell editWithFrame:innerRect inView:self editor:editor delegate:self event:event];
         }
         else {
             [selectedCell selectWithFrame:cellFrame inView:self editor:editor delegate:self start:0 length:currentValue.length];
