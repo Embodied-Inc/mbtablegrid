@@ -246,13 +246,14 @@ NSString * const MBTableGridTrackingPartKey = @"part";
         [selectionPath transformUsingAffineTransform:translate];
     }
     
+    [self drawCellInteriorsInRect:rect];
+
     // Fill the selection rectangle
     if (selectionPath) {
         [[selectionColor colorWithAlphaComponent:0.2f] set];
         [selectionPath fill];
     }
     
-    [self drawCellInteriorsInRect:rect];
 
     // Draw the selection borders and grab handle art
     if (selectionPath) {
@@ -300,6 +301,12 @@ NSString * const MBTableGridTrackingPartKey = @"part";
 - (void)stopAutoscrollTimer {
     [autoscrollTimer invalidate];
     autoscrollTimer = nil;
+}
+
+- (void) rightMouseDown: (NSEvent *)theEvent
+{
+    // eat these events
+    return;
 }
 
 - (void)mouseDown:(NSEvent *)theEvent
