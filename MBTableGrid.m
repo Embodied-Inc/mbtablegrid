@@ -355,6 +355,11 @@ NS_INLINE MBVerticalEdge MBOppositeVerticalEdge(MBVerticalEdge other) {
 	return YES;
 }
 
+- (void) clearCaches {
+    [self.rowHeights removeAllObjects];
+    [self.columnWidths removeAllObjects];
+}
+
 - (NSCell*) _cellForColumn: (NSUInteger)columnIndex row:(NSUInteger)rowIndex {
 	if ([self.dataSource respondsToSelector:@selector(tableGrid:cellForColumn:row:)]) {
 		return [self.dataSource tableGrid:self cellForColumn:columnIndex row:rowIndex];
