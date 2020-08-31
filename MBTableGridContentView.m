@@ -266,22 +266,22 @@ NSString * const MBTableGridTrackingPartKey = @"part";
         
         [NSGraphicsContext.currentContext restoreGraphicsState];
 
+        [self drawColumnDropIndicator];
+        [self drawRowDropIndicator];
+        [self drawCellDropIndicator];
+        
 		if (!showsGrabHandle || disabled || selectedColumns.count > 1) {
 			grabHandleRect = NSZeroRect;
 		}
         else if (shouldDrawFillPart != MBTableGridTrackingPartNone) {
             // Draw grab handle
-            grabHandleRect = NSMakeRect(NSMidX(selectionInsetRect) - kGRAB_HANDLE_HALF_SIDE_LENGTH - 2, (shouldDrawFillPart == MBTableGridTrackingPartFillTop ? NSMinY(selectionInsetRect) : NSMaxY(selectionInsetRect)) - kGRAB_HANDLE_HALF_SIDE_LENGTH - 2, kGRAB_HANDLE_SIDE_LENGTH + 4, kGRAB_HANDLE_SIDE_LENGTH + 4);
+            grabHandleRect = NSMakeRect(NSMaxX(selectionInsetRect) - kGRAB_HANDLE_HALF_SIDE_LENGTH - 4, (shouldDrawFillPart == MBTableGridTrackingPartFillTop ? NSMinY(selectionInsetRect) : NSMaxY(selectionInsetRect)) - kGRAB_HANDLE_HALF_SIDE_LENGTH - 4, kGRAB_HANDLE_SIDE_LENGTH + 4, kGRAB_HANDLE_SIDE_LENGTH + 4);
             [grabHandleImage drawInRect:grabHandleRect fromRect:NSZeroRect operation:NSCompositingOperationSourceOver fraction:1.0];
         }
 		
         // Inavlidate cursors so we use the correct cursor for the selection in the right place
         [self.window invalidateCursorRectsForView:self];
 	}
-    
-    [self drawColumnDropIndicator];
-    [self drawRowDropIndicator];
-    [self drawCellDropIndicator];
 }
 
 - (BOOL)isFlipped
@@ -318,14 +318,15 @@ NSString * const MBTableGridTrackingPartKey = @"part";
 	mouseDownRow = [self rowAtPoint:mouseLocationInContentView];
 
 	if(mouseDownRow == NSNotFound) {
-		return;
+        [self.tableGrid.rowRects removeAllObjects];
+        mouseDownRow = [self rowAtPoint:mouseLocationInContentView];
 	}
     
     // If the column wasn't found, probably need to flush the cached column rects
     if (mouseDownColumn == NSNotFound) {
         [self.tableGrid.columnRects removeAllObjects];
-        
         mouseDownColumn = [self columnAtPoint:mouseLocationInContentView];
+        return;
     }
     
 	NSCell *cell = [self.tableGrid _cellForColumn:mouseDownColumn row: mouseDownRow];
@@ -335,7 +336,7 @@ NSString * const MBTableGridTrackingPartKey = @"part";
 	if (theEvent.clickCount == 1) {
 		// Pass the event back to the MBTableGrid (Used to give First Responder status)
 		[self.tableGrid mouseDown:theEvent];
-		
+        
 		NSUInteger selectedColumn = self.tableGrid.selectedColumnIndexes.firstIndex;
 		NSUInteger selectedRow = self.tableGrid.selectedRowIndexes.firstIndex;
 
@@ -450,7 +451,7 @@ NSString * const MBTableGridTrackingPartKey = @"part";
 		MBVerticalEdge rowEdge = MBVerticalEdgeTop;
 		
 		// Select the appropriate number of columns
-		if(column != NSNotFound && !isFilling) {
+		if(column != NSNotFound ) {
 			NSInteger firstColumnToSelect = mouseDownColumn;
 			NSInteger numberOfColumnsToSelect = column-mouseDownColumn+1;
 			if(column < mouseDownColumn) {
@@ -492,7 +493,7 @@ NSString * const MBTableGridTrackingPartKey = @"part";
 		id value = [self.tableGrid _objectValueForColumn:mouseDownColumn row:mouseDownRow];
 		
         [self.tableGrid _setObjectValue:[value copy]
-                             forColumns:[NSIndexSet indexSetWithIndex:mouseDownColumn]
+                             forColumns:self.tableGrid.selectedColumnIndexes
                                    rows:self.tableGrid.selectedRowIndexes];
 		
         NSInteger numberOfRows = self.tableGrid.numberOfRows;
@@ -512,6 +513,7 @@ NSString * const MBTableGridTrackingPartKey = @"part";
 	mouseDownColumn = NSNotFound;
 	mouseDownRow = NSNotFound;
     [self.window invalidateCursorRectsForView:self];
+    [self updateTrackingAreas];
 }
 
 - (void)mouseEntered:(NSEvent *)theEvent
@@ -551,22 +553,22 @@ NSString * const MBTableGridTrackingPartKey = @"part";
 		}
 
 		if (selectedColumns.count == 1 && CGRectIntersectsRect(self.visibleRect, selectionRect)) {
-            selectionRect = CGRectIntersection(selectionRect, self.visibleRect);
+            selectionRect = CGRectIntersection(selectionRect, self.enclosingScrollView.contentView.documentRect);
 
 			NSRect fillTrackingRect = [self rectOfColumn:selectedColumns.firstIndex];
-			fillTrackingRect = CGRectIntersection(fillTrackingRect, self.visibleRect);
+			fillTrackingRect = CGRectIntersection(fillTrackingRect, self.enclosingScrollView.contentView.documentRect);
 			fillTrackingRect.size.height = self.frame.size.height;
 			NSRect topFillTrackingRect, bottomFillTrackingRect;
 
 			NSDivideRect(fillTrackingRect, &topFillTrackingRect, &bottomFillTrackingRect, selectionRect.origin.y + (selectionRect.size.height / 2.0), NSRectEdgeMinY);
 
-			if(CGRectIntersectsRect(topFillTrackingRect, self.visibleRect)) {
-				topFillTrackingRect = CGRectIntersection(topFillTrackingRect, self.visibleRect);
+			if(CGRectIntersectsRect(topFillTrackingRect, self.enclosingScrollView.contentView.documentRect)) {
+				topFillTrackingRect = CGRectIntersection(topFillTrackingRect,self.enclosingScrollView.contentView.documentRect);
 				[self addTrackingArea:[[NSTrackingArea alloc] initWithRect:topFillTrackingRect options:NSTrackingMouseEnteredAndExited | NSTrackingActiveInKeyWindow owner:self userInfo:@{MBTableGridTrackingPartKey : @(MBTableGridTrackingPartFillTop)}]];
 			}
 
-			if(CGRectIntersectsRect(bottomFillTrackingRect, self.visibleRect)) {
-				bottomFillTrackingRect = CGRectIntersection(bottomFillTrackingRect, self.visibleRect);
+			if(CGRectIntersectsRect(bottomFillTrackingRect, self.enclosingScrollView.contentView.documentRect)) {
+				bottomFillTrackingRect = CGRectIntersection(bottomFillTrackingRect, self.enclosingScrollView.contentView.documentRect);
 				[self addTrackingArea:[[NSTrackingArea alloc] initWithRect:bottomFillTrackingRect options:NSTrackingMouseEnteredAndExited | NSTrackingActiveInKeyWindow owner:self userInfo:@{MBTableGridTrackingPartKey : @(MBTableGridTrackingPartFillBottom)}]];
 			}
 		}
@@ -714,18 +716,18 @@ NSString * const MBTableGridTrackingPartKey = @"part";
     NSCell *selectedCell = [self.tableGrid _cellForColumn:selectedColumn row: selectedRow];
     
     // Check if the cell can be edited
-    if(![self.tableGrid _canEditCellAtColumn:selectedColumn row:selectedColumn]) {
+    if(![self.tableGrid _canEditCellAtColumn:selectedColumn row:selectedRow]) {
         editedColumn = NSNotFound;
         editedRow = NSNotFound;
         return;
     }
     
     // Select it and only it
-    if (self.tableGrid.selectedColumnIndexes.count > 1 && editedColumn != NSNotFound) {
-        self.tableGrid.selectedColumnIndexes = [NSIndexSet indexSetWithIndex:editedColumn];
+    if (self.tableGrid.selectedColumnIndexes.count > 1 && selectedColumn != NSNotFound) {
+        self.tableGrid.selectedColumnIndexes = [NSIndexSet indexSetWithIndex:selectedColumn];
     }
-    if (self.tableGrid.selectedRowIndexes.count > 1 && editedRow != NSNotFound) {
-        self.tableGrid.selectedRowIndexes = [NSIndexSet indexSetWithIndex:editedRow];
+    if (self.tableGrid.selectedRowIndexes.count > 1 && selectedRow != NSNotFound) {
+        self.tableGrid.selectedRowIndexes = [NSIndexSet indexSetWithIndex:selectedRow];
     }
     
     // Get the top-left selection
@@ -752,6 +754,7 @@ NSString * const MBTableGridTrackingPartKey = @"part";
         if(event != nil && event.type == NSEventTypeLeftMouseDown) {
             NSRect innerRect = NSInsetRect(cellFrame, 1, 1);
             innerRect = NSOffsetRect(innerRect, -1, -1);
+            [self stopAutoscrollTimer];
             [selectedCell editWithFrame:innerRect inView:self editor:editor delegate:self event:event];
         }
         else {
