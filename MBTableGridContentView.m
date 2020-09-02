@@ -709,6 +709,16 @@ NSString * const MBTableGridTrackingPartKey = @"part";
 }
 */
 
+- (void) cellClicked: sender {
+    //[self._savedTarget performSelector:self._savedSelector withObject:self._savedCell];
+    // this mess below replaces this single statement above. All in order to silence a warning
+    NSObject *obj = self._savedCell;
+    SEL selector = self._savedSelector;
+    IMP imp = [self._savedTarget methodForSelector:selector];
+    void (*func)(id, SEL, id) = (void *)imp;
+    func(self._savedTarget, selector, obj);
+}
+
 - (void)editSelectedCell:(id)sender text:(NSString *)aString
 {
     NSInteger selectedColumn = self.tableGrid.selectedColumnIndexes.firstIndex;
@@ -773,13 +783,18 @@ NSString * const MBTableGridTrackingPartKey = @"part";
     } else if ([selectedCell isKindOfClass:[MBTableGridButtonCell class]]) {
         editedColumn = NSNotFound;
         editedRow = NSNotFound;
-        [selectedCell.target performSelector:selectedCell.action withObject:selectedCell withObject:@{@"row":[NSNumber numberWithInteger:selectedRow],@"column":[NSNumber numberWithInteger:selectedColumn]}];
+        // [selectedCell.target performSelector:selectedCell.action withObject:selectedCell withObject:@{@"row":[NSNumber numberWithInteger:selectedRow],@"column":[NSNumber numberWithInteger:selectedColumn]}];
+        // more BS to fix an arc warning, keep the above comment so you can understand what is going on here
+        NSObject *obj = selectedCell;
+        NSObject *dict = @{@"row":[NSNumber numberWithInteger:selectedRow],@"column":[NSNumber numberWithInteger:selectedColumn]};
+        SEL selector = selectedCell.action;
+        IMP imp = [selectedCell.target methodForSelector:selector];
+        void (*func)(id, SEL, id,id) = (void *)imp;
+        func(selectedCell.target, selector, obj,dict);
     }
 }
 
-- (void) cellClicked: sender {
-    [self._savedTarget performSelector:self._savedSelector withObject:self._savedCell];
-}
+
 #pragma mark Layout Support
 
 - (NSRect)rectOfColumn:(NSUInteger)columnIndex
