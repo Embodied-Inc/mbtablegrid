@@ -1290,8 +1290,14 @@ NS_INLINE MBVerticalEdge MBOppositeVerticalEdge(MBVerticalEdge other) {
 			return NSDragOperationNone;
 		}
 
-		NSIndexSet *draggedColumns = (NSIndexSet *)[NSKeyedUnarchiver unarchiveObjectWithData:columnData];
-
+        NSError *error = nil;
+        NSIndexSet *draggedColumns = (NSIndexSet *)[NSKeyedUnarchiver unarchivedObjectOfClass:[NSIndexSet class]
+                                                                                     fromData:(NSData *)columnData
+                                                                                        error:&error];
+        if (error) {
+            return NSDragOperationNone;
+        }
+        
 		BOOL canDrop = NO;
 		if ([self.dataSource respondsToSelector:@selector(tableGrid:canMoveColumns:toIndex:)]) {
 			canDrop = [self.dataSource tableGrid:self canMoveColumns:draggedColumns toIndex:dropColumn];
@@ -1316,8 +1322,14 @@ NS_INLINE MBVerticalEdge MBOppositeVerticalEdge(MBVerticalEdge other) {
 			return NSDragOperationNone;
 		}
 
-		NSIndexSet *draggedRows = (NSIndexSet *)[NSKeyedUnarchiver unarchiveObjectWithData:rowData];
-
+        NSError *error = nil;
+        NSIndexSet *draggedRows = (NSIndexSet *)[NSKeyedUnarchiver unarchivedObjectOfClass:[NSIndexSet class]
+                                                                                     fromData:(NSData *)rowData
+                                                                                        error:&error];
+        if (error) {
+            return NSDragOperationNone;
+        }
+        
 		BOOL canDrop = NO;
 		if ([self.dataSource respondsToSelector:@selector(tableGrid:canMoveRows:toIndex:)]) {
 			canDrop = [self.dataSource tableGrid:self canMoveRows:draggedRows toIndex:dropRow];
@@ -1387,8 +1399,14 @@ NS_INLINE MBVerticalEdge MBOppositeVerticalEdge(MBVerticalEdge other) {
 		// If we're dragging a column
 		if ([self.dataSource respondsToSelector:@selector(tableGrid:moveColumns:toIndex:)]) {
 			// Get which columns are being dragged
-			NSIndexSet *draggedColumns = (NSIndexSet *)[NSKeyedUnarchiver unarchiveObjectWithData:columnData];
-
+            NSError *error = nil;
+            NSIndexSet *draggedColumns = (NSIndexSet *)[NSKeyedUnarchiver unarchivedObjectOfClass:[NSIndexSet class]
+                                                                                         fromData:(NSData *)columnData
+                                                                                            error:&error];
+            if (error) {
+                return NO;
+            }
+            
 			// Get the index to move the columns to
 			NSUInteger dropColumn = [self _dropColumnForPoint:mouseLocation];
 
@@ -1421,8 +1439,15 @@ NS_INLINE MBVerticalEdge MBOppositeVerticalEdge(MBVerticalEdge other) {
 		// If we're dragging a row
 		if ([self.dataSource respondsToSelector:@selector(tableGrid:moveRows:toIndex:)]) {
 			// Get which rows are being dragged
-			NSIndexSet *draggedRows = (NSIndexSet *)[NSKeyedUnarchiver unarchiveObjectWithData:rowData];
 
+            NSError *error = nil;
+            NSIndexSet *draggedRows = (NSIndexSet *)[NSKeyedUnarchiver unarchivedObjectOfClass:[NSIndexSet class]
+                                                                                         fromData:(NSData *)rowData
+                                                                                            error:&error];
+            if (error) {
+                return NO;
+            }
+            
 			// Get the index to move the rows to
 			NSUInteger dropRow = [self _dropRowForPoint:mouseLocation];
 
@@ -2170,7 +2195,8 @@ NS_INLINE MBVerticalEdge MBOppositeVerticalEdge(MBVerticalEdge other) {
 	NSRect firstSelectedColumn = [self rectOfColumn:self.selectedColumnIndexes.firstIndex];
 	NSPoint location = firstSelectedColumn.origin;
     
-    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self.selectedColumnIndexes];
+    NSError *error = nil;
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self.selectedColumnIndexes requiringSecureCoding:true error:&error];
     NSPasteboardItem *pbItem = [[NSPasteboardItem alloc] initWithPasteboardPropertyList:data ofType:MBTableGridColumnDataType];
     NSDraggingItem *item = [[NSDraggingItem alloc] initWithPasteboardWriter:pbItem];
     
@@ -2186,8 +2212,8 @@ NS_INLINE MBVerticalEdge MBOppositeVerticalEdge(MBVerticalEdge other) {
     
 	NSRect firstSelectedRow = [self rectOfRow:self.selectedRowIndexes.firstIndex];
 	NSPoint location = firstSelectedRow.origin;
-    
-    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self.selectedRowIndexes];
+    NSError *error = nil;
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self.selectedRowIndexes requiringSecureCoding:true error:&error];
     NSPasteboardItem *pbItem = [[NSPasteboardItem alloc] initWithPasteboardPropertyList:data ofType:MBTableGridRowDataType];
     NSDraggingItem *item = [[NSDraggingItem alloc] initWithPasteboardWriter:pbItem];
     
