@@ -310,7 +310,8 @@ NS_INLINE MBVerticalEdge MBOppositeVerticalEdge(MBVerticalEdge other) {
 - (void)_sortButtonClickedForColumn:(NSUInteger)column {
     if (self.sortColumnIndex == column) {
         if (self.isSortColumnAscending) {
-            self.sortColumnIndex = NSNotFound;
+            //self.sortColumnIndex = NSNotFound;
+            self.sortColumnAscending = NO;
         } else {
             self.sortColumnAscending = YES;
         }

@@ -72,4 +72,50 @@
     return NSMakeRange(NSNotFound, 0);
 }
 
+- (void)getCharacters:(unichar *)buffer range:(NSRange)range;
+{
+    NSInteger cellIndex = range.location;
+    NSInteger rowCount = _tableGrid.numberOfRows;
+    NSInteger columnCount = _tableGrid.numberOfColumns;
+    NSUInteger length = self.length;
+    
+    while (cellIndex < length) {
+        NSUInteger rowIndex = _row(cellIndex, rowCount, columnCount);
+        NSUInteger columnIndex = _col(cellIndex, rowCount, columnCount);
+        
+        NSString *value = [_tableGrid _objectValueForColumn:columnIndex row:rowIndex];
+
+        if (range.location < cellIndex + value.length) {
+            for (NSUInteger x = 0; x < range.length; x++) {
+                 buffer[x] = [value characterAtIndex: x];
+             }
+            break;
+        }
+        cellIndex++;
+    }
+}
+
+- (unichar)characterAtIndex:(NSUInteger)index;
+{
+    NSUInteger cellIndex = index;
+    NSInteger rowCount = _tableGrid.numberOfRows;
+    NSInteger columnCount = _tableGrid.numberOfColumns;
+    NSUInteger length = self.length;
+    unichar returnValue = 0;
+    
+    while (cellIndex < length) {
+        NSUInteger rowIndex = _row(cellIndex, rowCount, columnCount);
+        NSUInteger columnIndex = _col(cellIndex, rowCount, columnCount);
+        
+        NSString *value = [_tableGrid _objectValueForColumn:columnIndex row:rowIndex];
+
+        if (index < cellIndex + value.length) {
+            returnValue = [value characterAtIndex:index-cellIndex];
+            break;
+        }
+        cellIndex++;
+    }
+    
+    return returnValue;
+}
 @end

@@ -54,9 +54,12 @@
     if (_tableGrid.selectedColumnIndexes)
         columnIndex = _tableGrid.selectedColumnIndexes.firstIndex;
         
+    if (rowIndex == NSNotFound || columnIndex == NSNotFound)
+        return NSMakeRange(0,0);
     NSUInteger cellIndex = _cell(rowIndex, columnIndex, rowCount, columnCount);
+    NSString *value = [_tableGrid _objectValueForColumn:columnIndex row:rowIndex];
 
-    return NSMakeRange(cellIndex, 1);
+    return NSMakeRange(cellIndex, [value length]);
 }
 
 - (NSArray<NSValue *> *)selectedRanges {
