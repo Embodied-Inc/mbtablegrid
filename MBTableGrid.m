@@ -173,6 +173,8 @@ NS_INLINE MBVerticalEdge MBOppositeVerticalEdge(MBVerticalEdge other) {
         contentScrollView.hasHorizontalScroller = YES;
         contentScrollView.hasVerticalScroller = YES;
         contentScrollView.autohidesScrollers = YES;
+        contentScrollView.horizontalScrollElasticity = NSScrollElasticityNone;
+        contentScrollView.verticalScrollElasticity = NSScrollElasticityNone;
         contentScrollView.automaticallyAdjustsContentInsets = NO;
         contentScrollView.translatesAutoresizingMaskIntoConstraints = NO;
         [self addSubview:contentScrollView];
@@ -286,6 +288,7 @@ NS_INLINE MBVerticalEdge MBOppositeVerticalEdge(MBVerticalEdge other) {
         self.previousVerticalSelectionDirection = MBVerticalEdgeTop;
         self.previousHorizontalSelectionDirection = MBHorizontalEdgeLeft;
 		
+        _rowRects = [[NSMutableDictionary alloc] init];
 		_columnRects = [[NSMutableDictionary alloc] init];
         [self registerForDraggedTypes:@[MBTableGridColumnDataType, MBTableGridRowDataType]];
         
